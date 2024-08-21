@@ -12,7 +12,7 @@
 #define WIFI_TIMEOUT 20
 #define LED1 D4  
 #define LED2 D4 // should be D0 but not available on all NODEMCU boards
-#define RADIO_BAUD 2000
+#define RADIO_BAUD 1000
 #define RX_PIN D1
 #define TX_PIN D2 // not connected
 #define PTT_PIN D3 // not connected
@@ -38,6 +38,7 @@ struct __attribute__ ((packed)) ccsds_rx433_t {
   uint16_t    packet_ctr;         // 9-10
   uint16_t    baud;               // 11-12
   uint16_t    good_433_ctr;       // 13-14
+  uint16_t    rx_buffer_sts;      // 15-16
 }; 
 
 RH_ASK radio_receiver (RADIO_BAUD, RX_PIN, TX_PIN, PTT_PIN, false);
@@ -117,6 +118,7 @@ void setup() {
   rx433.packet_ctr = 0;
   rx433.baud = RADIO_BAUD;
   rx433.good_433_ctr = 0;
+  rx433.rx_buffer_sts = 0;
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
 }
@@ -136,6 +138,7 @@ void loop() {
     wifiUDP.write (radio_data, radio_datalen);
     wifiUDP.endPacket ();
     rx433.good_433_ctr += 1;
+    rx433.rx_buffer_sts = radio_receiver.RxBufferStatus();
     packet_received = true;
   }
   
